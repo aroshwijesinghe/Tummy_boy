@@ -8,6 +8,7 @@ import '../../data/exercise_service.dart';
 import '../widgets/exercise_card.dart';
 import 'exercise_detail_page.dart';
 import 'add_custom_exercise_page.dart';
+import '../../../../core/services/app_data_sync.dart';
 
 class ExerciseListPage extends StatefulWidget {
   const ExerciseListPage({super.key});
@@ -26,7 +27,14 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
   @override
   void initState() {
     super.initState();
+    AppDataSync.instance.addListener(_loadData);
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    AppDataSync.instance.removeListener(_loadData);
+    super.dispose();
   }
 
   Future<void> _loadData() async {

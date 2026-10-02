@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/exercises/data/models/exercise.dart';
+import 'app_data_sync.dart';
 
 /// Centralized, high-performance SharedPreferences wrapper for all data storage.
 class StorageService {
@@ -31,6 +32,7 @@ class StorageService {
   static Future<void> setExerciseValue(Exercise exercise, DateTime date, double value) async {
     final p = await prefs;
     await p.setDouble(exercise.dailyKey(date), value);
+    AppDataSync.instance.notifyDataChanged();
   }
 
   static Future<void> incrementExercise(Exercise exercise, DateTime date, [double amount = 1]) async {
@@ -38,11 +40,13 @@ class StorageService {
     final key = exercise.dailyKey(date);
     final current = p.getDouble(key) ?? 0;
     await p.setDouble(key, current + amount);
+    AppDataSync.instance.notifyDataChanged();
   }
 
   static Future<void> resetExercise(Exercise exercise, DateTime date) async {
     final p = await prefs;
     await p.remove(exercise.dailyKey(date));
+    AppDataSync.instance.notifyDataChanged();
   }
 
   /// Get exercise data for a 7-day span starting from [weekStart].
@@ -106,6 +110,7 @@ class StorageService {
     final list = await getCustomExercises();
     list.add(exercise);
     await saveCustomExercises(list);
+    AppDataSync.instance.notifyDataChanged();
   }
 
   static Future<void> removeCustomExercise(String exerciseId) async {
@@ -118,6 +123,7 @@ class StorageService {
       active.remove(exerciseId);
       await setActiveExerciseIds(active);
     }
+    AppDataSync.instance.notifyDataChanged();
   }
 
   // ── PIN ──
@@ -190,6 +196,7 @@ class StorageService {
       activeIds.remove(exerciseId);
     }
     await setActiveExerciseIds(activeIds);
+    AppDataSync.instance.notifyDataChanged();
   }
 
   // ── Goals (User Defined Only, No Forced Defaults on Fresh Install) ──
@@ -215,11 +222,13 @@ class StorageService {
   static Future<void> setGoal(Exercise exercise, double goal) async {
     final p = await prefs;
     await p.setDouble('exercise_goal_${exercise.id}', goal);
+    AppDataSync.instance.notifyDataChanged();
   }
 
   static Future<void> removeGoal(Exercise exercise) async {
     final p = await prefs;
     await p.remove('exercise_goal_${exercise.id}');
+    AppDataSync.instance.notifyDataChanged();
   }
 
   // ── Helpers ──

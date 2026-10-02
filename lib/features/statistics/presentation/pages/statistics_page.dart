@@ -10,6 +10,7 @@ import '../widgets/activity_heatmap.dart';
 import '../widgets/monthly_summary.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/weekly_bar_chart.dart';
+import '../../../../core/services/app_data_sync.dart';
 
 class StatisticsPage extends StatefulWidget {
   const StatisticsPage({super.key});
@@ -38,7 +39,14 @@ class _StatisticsPageState extends State<StatisticsPage> {
   @override
   void initState() {
     super.initState();
+    AppDataSync.instance.addListener(_loadData);
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    AppDataSync.instance.removeListener(_loadData);
+    super.dispose();
   }
 
   Future<void> _loadData() async {

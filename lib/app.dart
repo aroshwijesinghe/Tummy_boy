@@ -9,6 +9,7 @@ import 'features/profile/presentation/pages/profile_page.dart';
 import 'features/pin/data/pin_service.dart';
 import 'features/pin/presentation/pages/pin_setup_page.dart';
 import 'features/pin/presentation/pages/pin_verify_page.dart';
+import 'core/services/app_data_sync.dart';
 import 'shared/widgets/bottom_nav_bar.dart';
 
 class TummyBoyApp extends StatelessWidget {
@@ -142,6 +143,8 @@ class _MainShellState extends State<MainShell> {
           setState(() {
             _currentTab = index;
           });
+          // Instantly sync fresh exercises, goals, and stats when switching tabs
+          AppDataSync.instance.notifyDataChanged();
         },
       ),
     );

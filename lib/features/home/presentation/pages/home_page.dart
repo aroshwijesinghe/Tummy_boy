@@ -9,6 +9,7 @@ import '../../../exercises/data/exercise_service.dart';
 import '../../../exercises/presentation/pages/exercise_list_page.dart';
 import '../widgets/stamina_ring.dart';
 import '../widgets/stamina_info_dialog.dart';
+import '../../../../core/services/app_data_sync.dart';
 import '../../data/stamina_service.dart';
 
 /// Clean, simple, and intuitive Home Dashboard with customizable exercise goals,
@@ -32,7 +33,14 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    AppDataSync.instance.addListener(_loadData);
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    AppDataSync.instance.removeListener(_loadData);
+    super.dispose();
   }
 
   Future<void> _loadData() async {
