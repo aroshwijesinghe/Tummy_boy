@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/storage_service.dart';
-import '../../../../core/theme/theme_controller.dart';
 import '../../../../shared/widgets/neumorphic_container.dart';
 import '../../../exercises/data/models/exercise.dart';
 import '../../../exercises/presentation/pages/exercise_detail_page.dart';
@@ -198,84 +197,31 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // 1. SIMPLE & CLEAN HEADER (Greeting, Streak Badge, Theme Switch)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // 1. SIMPLE & CLEAN HEADER (Greeting & Streak Badge)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _getGreeting(),
-                          style: TextStyle(
-                            color: textCol,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            const Icon(Icons.bolt_rounded, size: 16, color: AppColors.neonCyan),
-                            const SizedBox(width: 4),
-                            Text(
-                              _streak > 0 ? '$_streak Day Workout Streak' : 'Daily Fitness Tracker',
-                              style: TextStyle(
-                                color: _streak > 0 ? AppColors.neonCyan : subCol,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                    Text(
+                      _getGreeting(),
+                      style: TextStyle(
+                        color: textCol,
+                        fontSize: 25,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                      ),
                     ),
-                    // Action controls: Stamina Info button & Theme toggle
+                    const SizedBox(height: 3),
                     Row(
                       children: [
-                        // Stamina Guide Button
-                        GestureDetector(
-                          onTap: _showStaminaInfo,
-                          child: const NeumorphicContainer(
-                            width: 44,
-                            height: 44,
-                            isCircle: true,
-                            padding: EdgeInsets.zero,
-                            glowColor: AppColors.neonCyan,
-                            child: Center(
-                              child: Icon(
-                                Icons.info_outline_rounded,
-                                size: 22,
-                                color: AppColors.neonCyan,
-                              ),
-                            ),
+                        const Icon(Icons.bolt_rounded, size: 16, color: AppColors.neonCyan),
+                        const SizedBox(width: 4),
+                        Text(
+                          _streak > 0 ? '$_streak Day Workout Streak' : 'Daily Fitness Tracker',
+                          style: TextStyle(
+                            color: _streak > 0 ? AppColors.neonCyan : subCol,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Dark / Light Theme Toggle
-                        ListenableBuilder(
-                          listenable: ThemeController.instance,
-                          builder: (context, _) {
-                            final isCurrentDark = ThemeController.instance.isDarkMode;
-                            return GestureDetector(
-                              onTap: () => ThemeController.instance.toggleTheme(),
-                              child: NeumorphicContainer(
-                                width: 44,
-                                height: 44,
-                                isCircle: true,
-                                padding: EdgeInsets.zero,
-                                glowColor: isCurrentDark ? AppColors.neonCyan : const Color(0xFF0284C7),
-                                child: Center(
-                                  child: Icon(
-                                    isCurrentDark ? Icons.wb_sunny_rounded : Icons.nightlight_round,
-                                    size: 22,
-                                    color: isCurrentDark ? AppColors.neonCyan : const Color(0xFF0284C7),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
                         ),
                       ],
                     ),
