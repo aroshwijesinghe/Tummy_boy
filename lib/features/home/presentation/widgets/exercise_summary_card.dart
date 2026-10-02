@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/neumorphic_container.dart';
-import '../../../../shared/widgets/glow_icon.dart';
 import '../../../exercises/data/models/exercise.dart';
+import '../../../exercises/presentation/widgets/exercise_badge_icon.dart';
 
 class ExerciseSummaryCard extends StatelessWidget {
   final Exercise exercise;
@@ -28,18 +28,18 @@ class ExerciseSummaryCard extends StatelessWidget {
       padding: const EdgeInsets.only(right: 14.0),
       child: NeumorphicContainer(
         width: 140,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GlowIcon(
-              icon: exercise.icon,
-              color: exercise.accentColor,
-              size: 28,
-              glowRadius: 8,
+            ExerciseBadgeIcon(
+              exerciseId: exercise.id,
+              fallbackIcon: exercise.icon,
+              accentColor: exercise.accentColor,
+              size: 42,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Text(
               exercise.name,
               style: TextStyle(

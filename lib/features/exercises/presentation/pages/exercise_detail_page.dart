@@ -5,6 +5,7 @@ import '../../../../shared/widgets/neumorphic_button.dart';
 import '../../data/models/exercise.dart';
 import '../../data/exercise_service.dart';
 import '../../../../core/services/storage_service.dart';
+import '../widgets/exercise_badge_icon.dart';
 
 class ExerciseDetailPage extends StatefulWidget {
   final Exercise exercise;
@@ -145,6 +146,15 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 10),
+                  // Exercise Custom Hardware Glyph Badge
+                  ExerciseBadgeIcon(
+                    exerciseId: widget.exercise.id,
+                    fallbackIcon: widget.exercise.icon,
+                    accentColor: accent,
+                    size: 72,
+                    isSelected: true,
+                  ),
+                  const SizedBox(height: 16),
                   // Central Dial (Rotary deck counter)
                   GestureDetector(
                     onTap: _showManualEntryDialog,

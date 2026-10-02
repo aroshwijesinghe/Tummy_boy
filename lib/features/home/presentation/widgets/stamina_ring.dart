@@ -7,8 +7,13 @@ import '../../../../core/constants/app_colors.dart';
 /// and a tactile central bevel knob with illuminated status.
 class StaminaRing extends StatefulWidget {
   final double percentage;
+  final VoidCallback? onCenterTap;
 
-  const StaminaRing({super.key, required this.percentage});
+  const StaminaRing({
+    super.key,
+    required this.percentage,
+    this.onCenterTap,
+  });
 
   @override
   State<StaminaRing> createState() => _StaminaRingState();
@@ -71,66 +76,103 @@ class _StaminaRingState extends State<StaminaRing> with SingleTickerProviderStat
                   isDark: isDark,
                 ),
               ),
-              // Central knob display
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.neonCyan.withValues(alpha: isDark ? 0.35 : 0.2),
-                          blurRadius: 12,
-                          spreadRadius: 2,
+              // Central knob display (Tappable to view Stamina explanation)
+              GestureDetector(
+                onTap: widget.onCenterTap,
+                behavior: HitTestBehavior.opaque,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Stack(
+                      alignment: Alignment.topRight,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.neonCyan.withValues(alpha: isDark ? 0.35 : 0.2),
+                                blurRadius: 12,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.power_settings_new_rounded,
+                            size: 26,
+                            color: AppColors.neonCyan,
+                          ),
+                        ),
+                        // Small info badge hinting it is clickable
+                        Container(
+                          padding: const EdgeInsets.all(2.5),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isDark ? AppColors.bgCardDark : AppColors.bgCardLight,
+                            border: Border.all(
+                              color: AppColors.neonCyan.withValues(alpha: 0.8),
+                              width: 1,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.info_outline_rounded,
+                            size: 10,
+                            color: AppColors.neonCyan,
+                          ),
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.power_settings_new_rounded,
-                      size: 26,
-                      color: AppColors.neonCyan,
+                    const SizedBox(height: 5),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'STAMINA',
+                          style: TextStyle(
+                            color: subCol,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 2.5,
+                          ),
+                        ),
+                        const SizedBox(width: 3),
+                        Icon(
+                          Icons.help_outline_rounded,
+                          size: 11,
+                          color: subCol.withValues(alpha: 0.8),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'STAMINA',
-                    style: TextStyle(
-                      color: subCol,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 2.5,
+                    const SizedBox(height: 2),
+                    Text(
+                      '${pct.toInt()}%',
+                      style: TextStyle(
+                        color: textCol,
+                        fontSize: 42,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -1,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${pct.toInt()}%',
-                    style: TextStyle(
-                      color: textCol,
-                      fontSize: 42,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    pct >= 80
-                        ? 'Peak Energy'
-                        : pct >= 50
-                            ? 'Steady Rhythm'
-                            : 'Needs Boost',
-                    style: TextStyle(
-                      color: pct >= 80
-                          ? AppColors.neonCyan
+                    const SizedBox(height: 2),
+                    Text(
+                      pct >= 80
+                          ? 'Peak Energy'
                           : pct >= 50
-                              ? AppColors.staminaMid
-                              : AppColors.staminaLow,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                              ? 'Steady Rhythm'
+                              : 'Needs Boost',
+                      style: TextStyle(
+                        color: pct >= 80
+                            ? AppColors.neonCyan
+                            : pct >= 50
+                                ? AppColors.staminaMid
+                                : AppColors.staminaLow,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           );

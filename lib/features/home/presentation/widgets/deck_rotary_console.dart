@@ -10,6 +10,7 @@ class DeckRotaryConsole extends StatelessWidget {
   final ValueChanged<int>? onQuickAdd;
   final VoidCallback? onResetToday;
   final VoidCallback? onLogFavorite;
+  final VoidCallback? onStaminaInfo;
 
   const DeckRotaryConsole({
     super.key,
@@ -17,6 +18,7 @@ class DeckRotaryConsole extends StatelessWidget {
     this.onQuickAdd,
     this.onResetToday,
     this.onLogFavorite,
+    this.onStaminaInfo,
   });
 
   @override
@@ -43,7 +45,10 @@ class DeckRotaryConsole extends StatelessWidget {
           width: 250,
           height: 250,
           margin: const EdgeInsets.symmetric(horizontal: 10),
-          child: StaminaRing(percentage: staminaPercentage),
+          child: StaminaRing(
+            percentage: staminaPercentage,
+            onCenterTap: onStaminaInfo,
+          ),
         ),
 
         // Right Flank (3 circular buttons with glowing cyan icons)

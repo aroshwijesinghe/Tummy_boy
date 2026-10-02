@@ -1,0 +1,324 @@
+import 'package:flutter/material.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../shared/widgets/neumorphic_button.dart';
+import '../../../../shared/widgets/neumorphic_container.dart';
+
+/// Modal dialog providing a clear, interactive explanation of how the Stamina System works,
+/// matching the hard-neumorphic dark/light deck design.
+class StaminaInfoDialog extends StatelessWidget {
+  final double currentStamina;
+  final int streakDays;
+
+  const StaminaInfoDialog({
+    super.key,
+    required this.currentStamina,
+    required this.streakDays,
+  });
+
+  static Future<void> show(BuildContext context, {required double stamina, required int streak}) {
+    return showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withValues(alpha: 0.65),
+      builder: (ctx) => StaminaInfoDialog(
+        currentStamina: stamina,
+        streakDays: streak,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textCol = isDark ? AppColors.textPrimary : const Color(0xFF0F172A);
+    final subCol = isDark ? AppColors.textSecondary : const Color(0xFF64748B);
+    final dimCol = isDark ? AppColors.textDim : const Color(0xFF94A3B8);
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      child: NeumorphicContainer(
+        borderRadius: 28,
+        padding: const EdgeInsets.all(22),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Header Row: Title & Close Button
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isDark ? AppColors.bgInputDark : AppColors.bgInputLight,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.neonCyan.withValues(alpha: isDark ? 0.35 : 0.2),
+                          blurRadius: 10,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.battery_charging_full_rounded,
+                      color: AppColors.neonCyan,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'STAMINA SYSTEM',
+                          style: TextStyle(
+                            color: textCol,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Dynamic Energy & Streak Engine',
+                          style: TextStyle(
+                            color: subCol,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  NeumorphicButton(
+                    size: 36,
+                    isCircular: true,
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Icon(Icons.close_rounded, size: 18, color: subCol),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 18),
+
+              // Live Status Banner
+              NeumorphicContainer(
+                isInset: true,
+                borderRadius: 18,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildStatusMetric(
+                      label: 'CURRENT STAMINA',
+                      value: '${currentStamina.toInt()}%',
+                      valueColor: currentStamina >= 80
+                          ? AppColors.neonCyan
+                          : currentStamina >= 50
+                              ? AppColors.staminaMid
+                              : AppColors.staminaLow,
+                      dimCol: dimCol,
+                    ),
+                    Container(
+                      width: 1,
+                      height: 34,
+                      color: isDark ? Colors.white10 : Colors.black12,
+                    ),
+                    _buildStatusMetric(
+                      label: 'ACTIVE STREAK',
+                      value: '$streakDays ${streakDays == 1 ? "Day" : "Days"}',
+                      valueColor: AppColors.neonCyan,
+                      dimCol: dimCol,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Rule 1: Consistency (100% when active daily)
+              _buildRuleCard(
+                icon: Icons.electric_bolt_rounded,
+                iconColor: AppColors.neonCyan,
+                title: 'Exercise Daily = 100% Stamina',
+                description:
+                    'When you log any exercise every day, your base energy stays fully charged at maximum 100% capacity.',
+                isDark: isDark,
+                textCol: textCol,
+                subCol: subCol,
+              ),
+
+              const SizedBox(height: 12),
+
+              // Rule 2: Natural Decay (Missed days)
+              _buildRuleCard(
+                icon: Icons.trending_down_rounded,
+                iconColor: AppColors.staminaLow,
+                title: 'Natural Inactivity Decay',
+                description:
+                    'Stamina evaluates your activity across a rolling 7-day window. If you do not exercise for a few days, your stamina gradually drains down.',
+                isDark: isDark,
+                textCol: textCol,
+                subCol: subCol,
+              ),
+
+              const SizedBox(height: 12),
+
+              // Rule 3: Rolling 7-day Window & Streak Boost
+              _buildRuleCard(
+                icon: Icons.autorenew_rounded,
+                iconColor: AppColors.staminaMid,
+                title: 'Rolling 7-Day Window + Streak Bonus',
+                description:
+                    '• Base Stamina = (Active Days in last 7 days / 7) × 100\n• Streak Bonus = +2% for each consecutive day worked out (up to +14% extra boost!).',
+                isDark: isDark,
+                textCol: textCol,
+                subCol: subCol,
+              ),
+
+              const SizedBox(height: 12),
+
+              // Rule 4: How to recover
+              _buildRuleCard(
+                icon: Icons.speed_rounded,
+                iconColor: AppColors.squatColor,
+                title: 'Fast Recovery',
+                description:
+                    'Just complete one set of pushups, squats, running, or any custom exercise today, and your dial immediately leaps back up!',
+                isDark: isDark,
+                textCol: textCol,
+                subCol: subCol,
+              ),
+
+              const SizedBox(height: 22),
+
+              // Understood / Close Action Button
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: const NeumorphicContainer(
+                  height: 48,
+                  borderRadius: 24,
+                  glowColor: AppColors.neonCyan,
+                  padding: EdgeInsets.zero,
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_circle_outline_rounded, color: AppColors.neonCyan, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'GOT IT',
+                          style: TextStyle(
+                            color: AppColors.neonCyan,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusMetric({
+    required String label,
+    required String value,
+    required Color valueColor,
+    required Color dimCol,
+  }) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: dimCol,
+            fontSize: 9.5,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            color: valueColor,
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRuleCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String description,
+    required bool isDark,
+    required Color textCol,
+    required Color subCol,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.bgInputDark.withValues(alpha: 0.5) : AppColors.bgInputLight.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.04),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: iconColor.withValues(alpha: 0.15),
+            ),
+            child: Icon(icon, color: iconColor, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: textCol,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  description,
+                  style: TextStyle(
+                    color: subCol,
+                    fontSize: 11.5,
+                    height: 1.35,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

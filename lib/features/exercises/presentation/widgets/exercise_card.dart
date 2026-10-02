@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/neumorphic_container.dart';
 import '../../data/models/exercise.dart';
+import 'exercise_badge_icon.dart';
 
 class ExerciseCard extends StatelessWidget {
   final Exercise exercise;
@@ -32,36 +33,12 @@ class ExerciseCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            // Tactile extruded round icon button (deck style)
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: isDark
-                      ? const [Color(0xFF222938), Color(0xFF141722)]
-                      : const [Color(0xFFF3F7FD), Color(0xFFE2E9F3)],
-                ),
-                border: Border.all(
-                  color: exercise.accentColor.withValues(alpha: 0.7),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: exercise.accentColor.withValues(alpha: isDark ? 0.3 : 0.2),
-                    blurRadius: 8,
-                    spreadRadius: 1,
-                  ),
-                ],
-              ),
-              child: Icon(
-                exercise.icon,
-                color: exercise.accentColor,
-                size: 24,
-              ),
+            // Tactile extruded round icon button (deck style with proper athletic glyphs)
+            ExerciseBadgeIcon(
+              exerciseId: exercise.id,
+              fallbackIcon: exercise.icon,
+              accentColor: exercise.accentColor,
+              size: 52,
             ),
             const SizedBox(width: 16),
             // Exercise Title and stats

@@ -11,6 +11,7 @@ import '../widgets/deck_search_bar.dart';
 import '../widgets/deck_rotary_console.dart';
 import '../widgets/deck_bottom_console.dart';
 import '../widgets/exercise_summary_card.dart';
+import '../widgets/stamina_info_dialog.dart';
 import '../../data/stamina_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -92,7 +93,20 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void _showStaminaInfo() {
+    StaminaInfoDialog.show(
+      context,
+      stamina: _staminaPercentage,
+      streak: _streak,
+    );
+  }
+
   void _onPresetTapped(String key) {
+    if (key == 'telemetry' || key == 'info') {
+      _showStaminaInfo();
+      return;
+    }
+
     if (key == 'custom') {
       Navigator.push(
         context,
@@ -147,8 +161,11 @@ class _HomePageState extends State<HomePage> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Top Left Capsule: Glowing Star & Equalizer
-                      DeckTelemetryCapsule(stamina: _staminaPercentage),
+                      // Top Left Capsule: Glowing Star/Info & Equalizer (Tappable to view Stamina explanation)
+                      DeckTelemetryCapsule(
+                        stamina: _staminaPercentage,
+                        onInfoTap: _showStaminaInfo,
+                      ),
                       const SizedBox(width: 12),
                       // Top Center Console: Inset Search & 4 Mode buttons
                       Expanded(
@@ -172,6 +189,7 @@ class _HomePageState extends State<HomePage> {
                   onQuickAdd: _quickAddReps,
                   onResetToday: _resetToday,
                   onLogFavorite: () => _onPresetTapped('pushups'),
+                  onStaminaInfo: _showStaminaInfo,
                 ),
 
                 const SizedBox(height: 28),

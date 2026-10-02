@@ -6,8 +6,13 @@ import '../../../../shared/widgets/neumorphic_container.dart';
 /// Top-left debossed capsule with glowing star/trophy, telemetry label, and animated equalizer bars.
 class DeckTelemetryCapsule extends StatefulWidget {
   final double stamina;
+  final VoidCallback? onInfoTap;
 
-  const DeckTelemetryCapsule({super.key, required this.stamina});
+  const DeckTelemetryCapsule({
+    super.key,
+    required this.stamina,
+    this.onInfoTap,
+  });
 
   @override
   State<DeckTelemetryCapsule> createState() => _DeckTelemetryCapsuleState();
@@ -47,18 +52,21 @@ class _DeckTelemetryCapsuleState extends State<DeckTelemetryCapsule>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Raised circular star button (matching reference image top-left)
-          const NeumorphicContainer(
-            width: 44,
-            height: 44,
-            isCircle: true,
-            padding: EdgeInsets.zero,
-            glowColor: AppColors.neonCyan,
-            child: Center(
-              child: Icon(
-                Icons.star_rounded,
-                size: 24,
-                color: AppColors.neonCyan,
+          // Raised circular info/star button (matching reference image top-left, taps to show stamina guide)
+          GestureDetector(
+            onTap: widget.onInfoTap,
+            child: const NeumorphicContainer(
+              width: 44,
+              height: 44,
+              isCircle: true,
+              padding: EdgeInsets.zero,
+              glowColor: AppColors.neonCyan,
+              child: Center(
+                child: Icon(
+                  Icons.info_outline_rounded,
+                  size: 22,
+                  color: AppColors.neonCyan,
+                ),
               ),
             ),
           ),

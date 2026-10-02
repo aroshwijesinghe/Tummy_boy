@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/neumorphic_button.dart';
 
+import '../../../exercises/presentation/widgets/exercise_badge_icon.dart';
+
 /// Bottom audio-deck console with 2x2 left circular presets, 4 center hardware pills,
 /// and 2x2 right circular presets matching the bottom half of the reference image.
 class DeckBottomConsole extends StatelessWidget {
@@ -30,17 +32,17 @@ class DeckBottomConsole extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  _buildDeckWireframeKey(Icons.fitness_center_rounded, () => onPresetSelected?.call('pushups')),
+                  _buildExerciseKey('pushups', Icons.fitness_center_rounded, AppColors.pushupColor),
                   const SizedBox(width: 12),
-                  _buildDeckWireframeKey(Icons.airline_seat_legroom_extra_rounded, () => onPresetSelected?.call('squats')),
+                  _buildExerciseKey('squats', Icons.accessibility_new, AppColors.squatColor),
                 ],
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  _buildDeckWireframeKey(Icons.favorite_border_rounded, () => onPresetSelected?.call('jumping_jacks')),
+                  _buildExerciseKey('jumping_jacks', Icons.sports_martial_arts, AppColors.jumpColor),
                   const SizedBox(width: 12),
-                  _buildDeckWireframeKey(Icons.horizontal_rule_rounded, () => onPresetSelected?.call('planks')),
+                  _buildExerciseKey('planks', Icons.self_improvement, AppColors.plankColor),
                 ],
               ),
             ],
@@ -66,9 +68,9 @@ class DeckBottomConsole extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  _buildDeckWireframeKey(Icons.directions_run_rounded, () => onPresetSelected?.call('running')),
+                  _buildExerciseKey('running', Icons.directions_run_rounded, AppColors.runColor),
                   const SizedBox(width: 12),
-                  _buildDeckWireframeKey(Icons.sports_gymnastics_rounded, () => onPresetSelected?.call('situps')),
+                  _buildExerciseKey('situps', Icons.airline_seat_flat, AppColors.situpColor),
                 ],
               ),
               const SizedBox(height: 12),
@@ -76,12 +78,25 @@ class DeckBottomConsole extends StatelessWidget {
                 children: [
                   _buildDeckWireframeKey(Icons.tune_rounded, () => onPresetSelected?.call('custom')),
                   const SizedBox(width: 12),
-                  _buildDeckWireframeKey(Icons.location_searching_rounded, () => onPresetSelected?.call('telemetry')),
+                  _buildDeckWireframeKey(Icons.info_outline_rounded, () => onPresetSelected?.call('telemetry')),
                 ],
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildExerciseKey(String exerciseId, IconData fallback, Color color) {
+    return GestureDetector(
+      onTap: () => onPresetSelected?.call(exerciseId),
+      child: ExerciseBadgeIcon(
+        exerciseId: exerciseId,
+        fallbackIcon: fallback,
+        accentColor: color,
+        size: 44,
+        showGlow: true,
       ),
     );
   }
