@@ -208,23 +208,29 @@ class _HomePageState extends State<HomePage> {
 
                 const SizedBox(height: 32),
 
-                // 4. MODULES TELEMETRY SCROLLVIEW
+                // 4. TODAY'S EXERCISES CAROUSEL (Easy to understand and tap)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'HARDWARE MODULES',
-                        style: TextStyle(
-                          color: textCol,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.5,
-                        ),
+                      Row(
+                        children: [
+                          const Icon(Icons.fitness_center_rounded, size: 16, color: AppColors.neonCyan),
+                          const SizedBox(width: 6),
+                          Text(
+                            "TODAY'S EXERCISES",
+                            style: TextStyle(
+                              color: textCol,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ],
                       ),
                       Text(
-                        '${_allExercises.length} Active Channels',
+                        '${_allExercises.length} Exercises • Tap to log',
                         style: TextStyle(
                           color: subCol,
                           fontSize: 11,

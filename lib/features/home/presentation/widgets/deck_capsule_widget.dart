@@ -41,7 +41,6 @@ class _DeckTelemetryCapsuleState extends State<DeckTelemetryCapsule>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textCol = isDark ? AppColors.textPrimary : const Color(0xFF0F172A);
-    final subCol = isDark ? AppColors.textDim : const Color(0xFF64748B);
 
     return NeumorphicContainer(
       width: 78,
@@ -70,23 +69,23 @@ class _DeckTelemetryCapsuleState extends State<DeckTelemetryCapsule>
               ),
             ),
           ),
-          // Telemetry Label
+          // Helpful Label
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'ENERGY',
+                'STAMINA',
                 style: TextStyle(
                   color: textCol,
-                  fontSize: 9,
+                  fontSize: 8.5,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.8,
                 ),
               ),
-              Text(
-                'OUTPUT',
+              const Text(
+                'GUIDE',
                 style: TextStyle(
-                  color: subCol,
+                  color: AppColors.neonCyan,
                   fontSize: 7.5,
                   fontWeight: FontWeight.w700,
                 ),
@@ -121,6 +120,8 @@ class DeckThemeCapsule extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textCol = isDark ? AppColors.textPrimary : const Color(0xFF0F172A);
+    final subCol = isDark ? AppColors.textDim : const Color(0xFF64748B);
 
     return NeumorphicContainer(
       width: 78,
@@ -155,7 +156,29 @@ class DeckThemeCapsule extends StatelessWidget {
               );
             },
           ),
-          // 3x4 Dot Matrix LED Grid (matching reference image bottom of right capsule)
+          // Center Theme / Mode Label
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'THEME',
+                style: TextStyle(
+                  color: textCol,
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              Text(
+                activeStreak > 0 ? '$activeStreak D STREAK' : 'DAILY STREAK',
+                style: TextStyle(
+                  color: activeStreak > 0 ? AppColors.neonCyan : subCol,
+                  fontSize: 7,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
           Container(
             padding: const EdgeInsets.all(4),
             child: Column(
