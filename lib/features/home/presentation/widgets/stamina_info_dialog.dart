@@ -141,13 +141,13 @@ class StaminaInfoDialog extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // Rule 1: Consistency (100% when active daily)
+              // Rule 1: Goal Progress Driven Stamina
               _buildRuleCard(
                 icon: Icons.electric_bolt_rounded,
                 iconColor: AppColors.neonCyan,
-                title: 'Exercise Daily = +100/7% Gain',
+                title: 'Stamina = (100/7)% × Daily Progress',
                 description:
-                    'Each day you perform any workout, your stamina recharges by +14.28% (+100/7%). Work out consistently every day to maintain full 100% peak charge!',
+                    'Your daily stamina recharge scales directly with your daily goals: (100 / 7)% × (Overall Daily Goal Progress). Reach 100% on your daily goals to earn the full +14.29% stamina boost!',
                 isDark: isDark,
                 textCol: textCol,
                 subCol: subCol,
@@ -169,13 +169,13 @@ class StaminaInfoDialog extends StatelessWidget {
 
               const SizedBox(height: 12),
 
-              // Rule 3: Fast Recovery Rule
+              // Rule 3: Customizable Goals
               _buildRuleCard(
-                icon: Icons.autorenew_rounded,
+                icon: Icons.flag_rounded,
                 iconColor: AppColors.staminaMid,
-                title: 'Quick Recovery After Decreasing',
+                title: 'Customizable Exercise Goals',
                 description:
-                    'After your stamina drops, simply log an exercise today to immediately boost your stamina back up by +100/7% (~14.29%).',
+                    'Set your own target count for each exercise (e.g., 30 pushups, 3 km run). As you log exercises, their individual progress bars fill up and boost your overall day progress bar!',
                 isDark: isDark,
                 textCol: textCol,
                 subCol: subCol,

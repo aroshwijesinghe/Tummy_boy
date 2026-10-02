@@ -14,6 +14,7 @@ class AddCustomExercisePage extends StatefulWidget {
 
 class _AddCustomExercisePageState extends State<AddCustomExercisePage> {
   final _nameController = TextEditingController();
+  final _goalController = TextEditingController(text: '20');
 
   final List<String> _units = ['reps', 'km', 'seconds', 'minutes', 'sets'];
   String _selectedUnit = 'reps';
@@ -24,6 +25,7 @@ class _AddCustomExercisePageState extends State<AddCustomExercisePage> {
   @override
   void dispose() {
     _nameController.dispose();
+    _goalController.dispose();
     super.dispose();
   }
 
@@ -48,6 +50,9 @@ class _AddCustomExercisePageState extends State<AddCustomExercisePage> {
     );
 
     await StorageService.addCustomExercise(newExercise);
+
+    final goalVal = double.tryParse(_goalController.text.trim()) ?? 20.0;
+    await StorageService.setGoal(newExercise, goalVal > 0 ? goalVal : 20.0);
 
     if (mounted) {
       Navigator.pop(context);
@@ -142,6 +147,27 @@ class _AddCustomExercisePageState extends State<AddCustomExercisePage> {
                   ),
                 );
               }).toList(),
+            ),
+            const SizedBox(height: 28),
+
+            Text(
+              'DAILY TARGET GOAL',
+              style: TextStyle(color: subCol, fontWeight: FontWeight.w700, fontSize: 12, letterSpacing: 1.5),
+            ),
+            const SizedBox(height: 10),
+            NeumorphicContainer(
+              isInset: true,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: TextField(
+                controller: _goalController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                style: TextStyle(color: textCol, fontWeight: FontWeight.w600),
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: 'e.g., 20',
+                  hintStyle: TextStyle(color: subCol),
+                ),
+              ),
             ),
             const SizedBox(height: 28),
 

@@ -153,6 +153,37 @@ class StorageService {
     await p.setBool('dark_mode_enabled', enabled);
   }
 
+  // ── Goals ──
+
+  static double getDefaultGoal(Exercise exercise) {
+    switch (exercise.id.toLowerCase()) {
+      case 'pushups':
+        return 30.0;
+      case 'squats':
+        return 40.0;
+      case 'running':
+        return 3.0; // 3 km
+      case 'jumping_jacks':
+        return 50.0;
+      case 'planks':
+        return 60.0; // 60 seconds
+      case 'situps':
+        return 30.0;
+      default:
+        return exercise.unit == 'km' ? 2.0 : 20.0;
+    }
+  }
+
+  static Future<double> getGoal(Exercise exercise) async {
+    final p = await prefs;
+    return p.getDouble('exercise_goal_${exercise.id}') ?? getDefaultGoal(exercise);
+  }
+
+  static Future<void> setGoal(Exercise exercise, double goal) async {
+    final p = await prefs;
+    await p.setDouble('exercise_goal_${exercise.id}', goal);
+  }
+
   // ── Helpers ──
 
   static DateTime getWeekStart(DateTime date) {

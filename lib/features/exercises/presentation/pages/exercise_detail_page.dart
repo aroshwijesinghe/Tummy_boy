@@ -18,6 +18,7 @@ class ExerciseDetailPage extends StatefulWidget {
 
 class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
   double _todayValue = 0;
+  double _goal = 20;
   List<double> _weekData = List.filled(7, 0);
   bool _isLoading = true;
 
@@ -30,6 +31,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     final val = await ExerciseService.getTodayValue(widget.exercise);
+    final goalVal = await StorageService.getGoal(widget.exercise);
     final weekStart = StorageService.getWeekStart(DateTime.now());
     final weekMap = await StorageService.getWeeklyExerciseData(widget.exercise, weekStart);
     final weekList = List.generate(7, (i) {
@@ -40,10 +42,74 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
     if (mounted) {
       setState(() {
         _todayValue = val;
+        _goal = goalVal;
         _weekData = weekList;
         _isLoading = false;
       });
     }
+  }
+
+  void _showSetGoalDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final formattedGoal = _goal.truncateToDouble() == _goal
+        ? _goal.toInt().toString()
+        : _goal.toStringAsFixed(1);
+    final ctrl = TextEditingController(text: formattedGoal);
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: isDark ? AppColors.bgCardDark : AppColors.bgCardLight,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            'Set Daily Goal',
+            style: TextStyle(
+              color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: TextField(
+            controller: ctrl,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A)),
+            decoration: InputDecoration(
+              labelText: 'Target ${widget.exercise.unit} per day',
+              labelStyle: TextStyle(color: isDark ? AppColors.textDim : const Color(0xFF64748B)),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: widget.exercise.accentColor, width: 2),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Cancel', style: TextStyle(color: isDark ? AppColors.textDim : const Color(0xFF64748B))),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: widget.exercise.accentColor,
+                foregroundColor: Colors.black,
+              ),
+              onPressed: () async {
+                final val = double.tryParse(ctrl.text);
+                if (val != null && val > 0) {
+                  await StorageService.setGoal(widget.exercise, val);
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  _loadData();
+                }
+              },
+              child: const Text('Save Goal'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _addValue(double amount) async {
@@ -201,7 +267,112 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 36),
+                  const SizedBox(height: 20),
+
+                  // Goal Progress Card & Bar
+                  NeumorphicContainer(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.flag_rounded, size: 16, color: accent),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'DAILY GOAL',
+                                  style: TextStyle(
+                                    color: textCol,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            GestureDetector(
+                              onTap: _showSetGoalDialog,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: accent.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: accent.withValues(alpha: 0.4)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.edit_rounded, size: 12, color: accent),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Edit Goal',
+                                      style: TextStyle(
+                                        color: accent,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        // Numbers + Percentage
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '${_todayValue.truncateToDouble() == _todayValue ? _todayValue.toInt() : _todayValue.toStringAsFixed(1)} / ${_goal.truncateToDouble() == _goal ? _goal.toInt() : _goal.toStringAsFixed(1)} ${widget.exercise.unit}',
+                              style: TextStyle(
+                                color: textCol,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              '${(_goal > 0 ? (_todayValue / _goal * 100).clamp(0, 100) : 0).toInt()}%',
+                              style: TextStyle(
+                                color: accent,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        // Neumorphic Inset Progress Track
+                        NeumorphicContainer(
+                          height: 12,
+                          isInset: true,
+                          borderRadius: 6,
+                          padding: EdgeInsets.zero,
+                          child: FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: _goal > 0 ? (_todayValue / _goal).clamp(0.0, 1.0) : 0.0,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(6),
+                                gradient: LinearGradient(
+                                  colors: [accent.withValues(alpha: 0.7), accent],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: accent.withValues(alpha: 0.5),
+                                    blurRadius: 6,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 28),
 
                   // Quick Increment tactile deck buttons
                   Text(
