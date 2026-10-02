@@ -145,9 +145,9 @@ class StaminaInfoDialog extends StatelessWidget {
               _buildRuleCard(
                 icon: Icons.electric_bolt_rounded,
                 iconColor: AppColors.neonCyan,
-                title: 'Exercise Daily = 100% Stamina',
+                title: 'Exercise Daily = +100/7% Gain',
                 description:
-                    'When you log any exercise every day, your base energy stays fully charged at maximum 100% capacity.',
+                    'Each day you perform any workout, your stamina recharges by +14.28% (+100/7%). Work out consistently every day to maintain full 100% peak charge!',
                 isDark: isDark,
                 textCol: textCol,
                 subCol: subCol,
@@ -159,9 +159,9 @@ class StaminaInfoDialog extends StatelessWidget {
               _buildRuleCard(
                 icon: Icons.trending_down_rounded,
                 iconColor: AppColors.staminaLow,
-                title: 'Natural Inactivity Decay',
+                title: 'Missed Day = -10% Penalty',
                 description:
-                    'Stamina evaluates your activity across a rolling 7-day window. If you do not exercise for a few days, your stamina gradually drains down.',
+                    'If you do not exercise for a day, your stamina automatically drops down by -10%. Consecutive missed days continue to decrease stamina until 0%.',
                 isDark: isDark,
                 textCol: textCol,
                 subCol: subCol,
@@ -169,13 +169,13 @@ class StaminaInfoDialog extends StatelessWidget {
 
               const SizedBox(height: 12),
 
-              // Rule 3: Rolling 7-day Window & Streak Boost
+              // Rule 3: Fast Recovery Rule
               _buildRuleCard(
                 icon: Icons.autorenew_rounded,
                 iconColor: AppColors.staminaMid,
-                title: 'Rolling 7-Day Window + Streak Bonus',
+                title: 'Quick Recovery After Decreasing',
                 description:
-                    '• Base Stamina = (Active Days in last 7 days / 7) × 100\n• Streak Bonus = +2% for each consecutive day worked out (up to +14% extra boost!).',
+                    'After your stamina drops, simply log an exercise today to immediately boost your stamina back up by +100/7% (~14.29%).',
                 isDark: isDark,
                 textCol: textCol,
                 subCol: subCol,
@@ -183,13 +183,13 @@ class StaminaInfoDialog extends StatelessWidget {
 
               const SizedBox(height: 12),
 
-              // Rule 4: How to recover
+              // Rule 4: Streak bonus
               _buildRuleCard(
                 icon: Icons.speed_rounded,
                 iconColor: AppColors.squatColor,
-                title: 'Fast Recovery',
+                title: 'Active Consistency Bonus',
                 description:
-                    'Just complete one set of pushups, squats, running, or any custom exercise today, and your dial immediately leaps back up!',
+                    'Maintain your daily workout streak to build resilience against decay and lock your energy gauge into overdrive.',
                 isDark: isDark,
                 textCol: textCol,
                 subCol: subCol,
