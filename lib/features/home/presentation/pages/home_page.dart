@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/exercise_defaults.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/theme/theme_controller.dart';
 import '../../../../shared/widgets/neumorphic_container.dart';
@@ -8,6 +7,8 @@ import '../../../exercises/data/models/exercise.dart';
 import '../../../exercises/presentation/pages/exercise_detail_page.dart';
 import '../../../exercises/presentation/pages/add_custom_exercise_page.dart';
 import '../../../exercises/presentation/widgets/exercise_badge_icon.dart';
+import '../../../exercises/data/exercise_service.dart';
+import '../../../exercises/presentation/pages/exercise_list_page.dart';
 import '../widgets/stamina_ring.dart';
 import '../widgets/stamina_info_dialog.dart';
 import '../../data/stamina_service.dart';
@@ -37,14 +38,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _loadData() async {
-    final customExercises = await StorageService.getCustomExercises();
-    _allExercises = [...ExerciseDefaults.builtIn, ...customExercises];
+    final activeExercises = await ExerciseService.getActiveExercises();
+    _allExercises = activeExercises;
 
     final p = await StorageService.prefs;
     final now = DateTime.now();
     for (final ex in _allExercises) {
       _todayValues[ex.id] = p.getDouble(ex.dailyKey(now)) ?? 0.0;
-      _goalValues[ex.id] = await StorageService.getGoal(ex);
+      _goalValues[ex.id] = await StorageService.getGoalOrDefault(ex, 0.0);
     }
 
     final results = await Future.wait([
@@ -73,10 +74,12 @@ class _HomePageState extends State<HomePage> {
 
   void _showEditGoalDialog(Exercise exercise) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final currentGoal = _goalValues[exercise.id] ?? StorageService.getDefaultGoal(exercise);
-    final formattedGoal = currentGoal.truncateToDouble() == currentGoal
-        ? currentGoal.toInt().toString()
-        : currentGoal.toStringAsFixed(1);
+    final currentGoal = _goalValues[exercise.id] ?? 0.0;
+    final formattedGoal = currentGoal > 0
+        ? (currentGoal.truncateToDouble() == currentGoal
+            ? currentGoal.toInt().toString()
+            : currentGoal.toStringAsFixed(1))
+        : (exercise.unit == 'km' ? '3' : (exercise.unit == 'seconds' ? '60' : '30'));
     final ctrl = TextEditingController(text: formattedGoal);
 
     showDialog(
@@ -422,23 +425,83 @@ class _HomePageState extends State<HomePage> {
 
                 const SizedBox(height: 14),
 
-                // 5. CLEAN EXERCISES LIST WITH GOALS & INDIVIDUAL PROGRESS BARS
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _allExercises.length,
-                  itemBuilder: (context, index) {
-                    final ex = _allExercises[index];
-                    final todayVal = _todayValues[ex.id] ?? 0.0;
-                    final goalVal = _goalValues[ex.id] ?? StorageService.getDefaultGoal(ex);
-                    final double progress = goalVal > 0 ? (todayVal / goalVal).clamp(0.0, 1.0) : 0.0;
+                // 5. CLEAN EXERCISES LIST WITH GOALS & INDIVIDUAL PROGRESS BARS OR EMPTY STATE
+                if (_allExercises.isEmpty)
+                  NeumorphicContainer(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.neonCyan.withValues(alpha: 0.15),
+                            border: Border.all(color: AppColors.neonCyan.withValues(alpha: 0.4), width: 1.5),
+                          ),
+                          child: const Icon(Icons.fitness_center_rounded, color: AppColors.neonCyan, size: 28),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No Active Exercises Assigned',
+                          style: TextStyle(
+                            color: textCol,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Choose your exercises from the Workout Catalog and define your daily targets to start tracking stamina.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: subCol,
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const ExerciseListPage()),
+                            ).then((_) => _loadData());
+                          },
+                          icon: const Icon(Icons.add_task_rounded, size: 18),
+                          label: const Text(
+                            'Assign Exercises & Set Goals',
+                            style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.neonCyan,
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _allExercises.length,
+                    itemBuilder: (context, index) {
+                      final ex = _allExercises[index];
+                      final todayVal = _todayValues[ex.id] ?? 0.0;
+                      final goalVal = _goalValues[ex.id] ?? 0.0;
+                      final double progress = goalVal > 0 ? (todayVal / goalVal).clamp(0.0, 1.0) : 0.0;
 
-                    final formattedValue = todayVal.truncateToDouble() == todayVal
-                        ? todayVal.toInt().toString()
-                        : todayVal.toStringAsFixed(1);
-                    final formattedGoal = goalVal.truncateToDouble() == goalVal
-                        ? goalVal.toInt().toString()
-                        : goalVal.toStringAsFixed(1);
+                      final formattedValue = todayVal.truncateToDouble() == todayVal
+                          ? todayVal.toInt().toString()
+                          : todayVal.toStringAsFixed(1);
+                      final formattedGoal = goalVal > 0
+                          ? (goalVal.truncateToDouble() == goalVal
+                              ? goalVal.toInt().toString()
+                              : goalVal.toStringAsFixed(1))
+                          : 'Not set';
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),

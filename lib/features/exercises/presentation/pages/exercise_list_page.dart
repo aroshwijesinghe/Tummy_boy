@@ -20,6 +20,7 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
   List<Exercise> _builtIn = [];
   List<Exercise> _custom = [];
   final Map<String, double> _todayValues = {};
+  Set<String> _activeIds = {};
   bool _isLoading = true;
 
   @override
@@ -31,11 +32,13 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     final all = await ExerciseService.getAllExercises();
+    final activeList = await StorageService.getActiveExerciseIds();
     final p = await StorageService.prefs;
     final now = DateTime.now();
 
     _builtIn = all.where((e) => e.isBuiltIn).toList();
     _custom = all.where((e) => !e.isBuiltIn).toList();
+    _activeIds = activeList.toSet();
 
     for (final exercise in all) {
       _todayValues[exercise.id] = p.getDouble(exercise.dailyKey(now)) ?? 0;
@@ -43,6 +46,161 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
 
     if (mounted) {
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleToggleActive(Exercise exercise, bool shouldActivate) async {
+    if (shouldActivate) {
+      // Check if user already has a goal defined for this exercise
+      final currentGoal = await StorageService.getGoal(exercise);
+      if (currentGoal == null || currentGoal <= 0) {
+        // Prompt user to define a goal for this exercise before enabling it
+        if (!mounted) return;
+        final saved = await _showGoalPromptDialog(exercise);
+        if (!saved) {
+          // If cancelled without setting goal, do not activate
+          return;
+        }
+      }
+      await StorageService.toggleExerciseActive(exercise.id, true);
+    } else {
+      await StorageService.toggleExerciseActive(exercise.id, false);
+    }
+    await _loadData();
+  }
+
+  Future<bool> _showGoalPromptDialog(Exercise exercise) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final defaultSuggested = exercise.unit == 'km' ? '3' : (exercise.unit == 'seconds' ? '60' : '30');
+    final ctrl = TextEditingController(text: defaultSuggested);
+
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: isDark ? AppColors.bgCardDark : AppColors.bgCardLight,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              Icon(Icons.flag_rounded, color: exercise.accentColor, size: 22),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Set ${exercise.name} Goal',
+                  style: TextStyle(
+                    color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Define your daily target before adding this exercise to your Home screen:',
+                style: TextStyle(
+                  color: isDark ? AppColors.textDim : const Color(0xFF64748B),
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: ctrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                autofocus: true,
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  fontWeight: FontWeight.bold,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Daily Target (${exercise.unit})',
+                  labelStyle: TextStyle(color: isDark ? AppColors.textDim : const Color(0xFF64748B)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: exercise.accentColor, width: 2),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('Cancel', style: TextStyle(color: isDark ? AppColors.textDim : const Color(0xFF64748B))),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: exercise.accentColor,
+                foregroundColor: Colors.black,
+              ),
+              onPressed: () async {
+                final val = double.tryParse(ctrl.text.trim());
+                if (val != null && val > 0) {
+                  await StorageService.setGoal(exercise, val);
+                  if (ctx.mounted) Navigator.pop(ctx, true);
+                }
+              },
+              child: const Text('Save & Enable'),
+            ),
+          ],
+        );
+      },
+    );
+    return result ?? false;
+  }
+
+  Future<void> _confirmDeleteCustomExercise(Exercise exercise) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? AppColors.bgCardDark : AppColors.bgCardLight;
+    final textCol = isDark ? AppColors.textPrimary : const Color(0xFF0F172A);
+
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cardBg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Delete ${exercise.name}?', style: TextStyle(color: textCol, fontWeight: FontWeight.bold)),
+        content: Text(
+          'This exercise will be removed from your workout catalog and Home deck. All past logs and metrics for this exercise will remain safely preserved in your Statistics.',
+          style: TextStyle(color: isDark ? AppColors.textSecondary : const Color(0xFF475569)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel', style: TextStyle(color: isDark ? AppColors.textDim : const Color(0xFF64748B))),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.situpColor,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete Module'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete == true) {
+      await StorageService.removeCustomExercise(exercise.id);
+      await _loadData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${exercise.name} removed (historical metrics preserved)'),
+            backgroundColor: AppColors.neonCyan,
+          ),
+        );
+      }
     }
   }
 
@@ -79,7 +237,7 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'Workout Modules',
+          'Workout Catalog',
           style: TextStyle(
             color: textCol,
             fontWeight: FontWeight.w800,
@@ -95,8 +253,30 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                 children: [
+                  // Instruction Card
+                  NeumorphicContainer(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.tune_rounded, color: AppColors.neonCyan, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Toggle exercises below to assign them to your Home screen deck and daily goal tracking.',
+                            style: TextStyle(
+                              color: isDark ? AppColors.textSecondary : const Color(0xFF475569),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
                   Text(
-                    'CALIBRATED EXERCISES',
+                    'BUILT-IN EXERCISES',
                     style: TextStyle(
                       color: subCol,
                       fontWeight: FontWeight.w700,
@@ -108,6 +288,8 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
                   ..._builtIn.map((e) => ExerciseCard(
                         exercise: e,
                         todayValue: _todayValues[e.id] ?? 0.0,
+                        isActive: _activeIds.contains(e.id),
+                        onToggleActive: (val) => _handleToggleActive(e, val),
                         onTap: () => _navigateToDetail(e),
                       )),
                   const SizedBox(height: 20),
@@ -124,6 +306,9 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
                   ..._custom.map((e) => ExerciseCard(
                         exercise: e,
                         todayValue: _todayValues[e.id] ?? 0.0,
+                        isActive: _activeIds.contains(e.id),
+                        onToggleActive: (val) => _handleToggleActive(e, val),
+                        onDelete: () => _confirmDeleteCustomExercise(e),
                         onTap: () => _navigateToDetail(e),
                       )),
                   // Add custom exercise card (hard debossed socket with neon dashed border)

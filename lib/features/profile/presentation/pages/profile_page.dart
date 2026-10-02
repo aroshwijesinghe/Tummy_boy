@@ -148,6 +148,129 @@ class ProfilePage extends StatelessWidget {
               subtitle: 'Tummy Boy v0.1.0 • Hard Neumorphic Engine',
               onTap: null,
             ),
+            const SizedBox(height: 28),
+
+            // CONTACT DETAILS SECTION (Website & Email only)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'CONTACT',
+                style: TextStyle(
+                  color: subCol,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            NeumorphicContainer(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                children: [
+                  // Website / Portfolio item
+                  GestureDetector(
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Website: https://portfoilo-ruddy-two.vercel.app/'),
+                          backgroundColor: AppColors.neonCyan,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.neonCyan.withValues(alpha: 0.15),
+                          ),
+                          child: const Icon(Icons.language_rounded, color: AppColors.neonCyan, size: 20),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Portfolio Website',
+                                style: TextStyle(color: subCol, fontSize: 11, fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'https://portfoilo-ruddy-two.vercel.app/',
+                                style: TextStyle(
+                                  color: textCol,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.open_in_new_rounded, color: subCol, size: 18),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Divider(color: isDark ? AppColors.borderDark : AppColors.borderLight, height: 1),
+                  const SizedBox(height: 14),
+                  // Email item
+                  GestureDetector(
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Email: aroshwijesingha@gmail.com'),
+                          backgroundColor: AppColors.neonCyan,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.neonCyan.withValues(alpha: 0.15),
+                          ),
+                          child: const Icon(Icons.email_outlined, color: AppColors.neonCyan, size: 20),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Email',
+                                style: TextStyle(color: subCol, fontSize: 11, fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'aroshwijesingha@gmail.com',
+                                style: TextStyle(
+                                  color: textCol,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.copy_rounded, color: subCol, size: 18),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 30),
           ],
         ),
       ),

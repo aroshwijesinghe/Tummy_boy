@@ -112,6 +112,12 @@ class StorageService {
     final list = await getCustomExercises();
     list.removeWhere((e) => e.id == exerciseId);
     await saveCustomExercises(list);
+    // Remove from active exercises as well, but NEVER delete historical daily logs
+    final active = await getActiveExerciseIds();
+    if (active.contains(exerciseId)) {
+      active.remove(exerciseId);
+      await setActiveExerciseIds(active);
+    }
   }
 
   // ── PIN ──
@@ -153,35 +159,67 @@ class StorageService {
     await p.setBool('dark_mode_enabled', enabled);
   }
 
-  // ── Goals ──
+  // ── User Assigned / Active Exercises on Home Screen ──
+  static const String _activeExerciseIdsKey = 'user_assigned_active_exercise_ids';
 
-  static double getDefaultGoal(Exercise exercise) {
-    switch (exercise.id.toLowerCase()) {
-      case 'pushups':
-        return 30.0;
-      case 'squats':
-        return 40.0;
-      case 'running':
-        return 3.0; // 3 km
-      case 'jumping_jacks':
-        return 50.0;
-      case 'planks':
-        return 60.0; // 60 seconds
-      case 'situps':
-        return 30.0;
-      default:
-        return exercise.unit == 'km' ? 2.0 : 20.0;
-    }
+  /// Returns the list of exercise IDs assigned by the user to the Home screen.
+  /// On fresh install, returns an empty list (user must explicitly assign exercises).
+  static Future<List<String>> getActiveExerciseIds() async {
+    final p = await prefs;
+    final list = p.getStringList(_activeExerciseIdsKey);
+    return list ?? [];
   }
 
-  static Future<double> getGoal(Exercise exercise) async {
+  static Future<void> setActiveExerciseIds(List<String> ids) async {
     final p = await prefs;
-    return p.getDouble('exercise_goal_${exercise.id}') ?? getDefaultGoal(exercise);
+    await p.setStringList(_activeExerciseIdsKey, ids);
+  }
+
+  static Future<bool> isExerciseActive(String exerciseId) async {
+    final activeIds = await getActiveExerciseIds();
+    return activeIds.contains(exerciseId);
+  }
+
+  static Future<void> toggleExerciseActive(String exerciseId, bool active) async {
+    final activeIds = await getActiveExerciseIds();
+    if (active) {
+      if (!activeIds.contains(exerciseId)) {
+        activeIds.add(exerciseId);
+      }
+    } else {
+      activeIds.remove(exerciseId);
+    }
+    await setActiveExerciseIds(activeIds);
+  }
+
+  // ── Goals (User Defined Only, No Forced Defaults on Fresh Install) ──
+
+  /// Check whether the user has explicitly defined a goal for this exercise.
+  static Future<bool> hasGoal(Exercise exercise) async {
+    final p = await prefs;
+    return p.containsKey('exercise_goal_${exercise.id}');
+  }
+
+  /// Get the user-defined goal. Returns null if user has not yet set a goal for this exercise.
+  static Future<double?> getGoal(Exercise exercise) async {
+    final p = await prefs;
+    return p.getDouble('exercise_goal_${exercise.id}');
+  }
+
+  /// Get the user-defined goal with a fallback if desired (or 0.0 if unset).
+  static Future<double> getGoalOrDefault(Exercise exercise, [double fallback = 0.0]) async {
+    final p = await prefs;
+    return p.getDouble('exercise_goal_${exercise.id}') ?? fallback;
   }
 
   static Future<void> setGoal(Exercise exercise, double goal) async {
     final p = await prefs;
     await p.setDouble('exercise_goal_${exercise.id}', goal);
+  }
+
+  static Future<void> removeGoal(Exercise exercise) async {
+    final p = await prefs;
+    await p.remove('exercise_goal_${exercise.id}');
   }
 
   // ── Helpers ──

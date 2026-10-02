@@ -159,9 +159,9 @@ class StaminaInfoDialog extends StatelessWidget {
               _buildRuleCard(
                 icon: Icons.trending_down_rounded,
                 iconColor: AppColors.staminaLow,
-                title: 'Missed Day = -10% Penalty',
+                title: 'Missed Day = -20% Penalty',
                 description:
-                    'If you do not exercise for a day, your stamina automatically drops down by -10%. Consecutive missed days continue to decrease stamina until 0%.',
+                    'If you do not exercise for a day, your stamina automatically drops down by -20%. Consecutive missed days continue to decrease stamina until 0%.',
                 isDark: isDark,
                 textCol: textCol,
                 subCol: subCol,

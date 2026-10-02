@@ -51,8 +51,13 @@ class _AddCustomExercisePageState extends State<AddCustomExercisePage> {
 
     await StorageService.addCustomExercise(newExercise);
 
-    final goalVal = double.tryParse(_goalController.text.trim()) ?? 20.0;
-    await StorageService.setGoal(newExercise, goalVal > 0 ? goalVal : 20.0);
+    final goalText = _goalController.text.trim();
+    final goalVal = double.tryParse(goalText);
+    if (goalVal != null && goalVal > 0) {
+      await StorageService.setGoal(newExercise, goalVal);
+      // Automatically assign new customized exercise to Home screen deck
+      await StorageService.toggleExerciseActive(newExercise.id, true);
+    }
 
     if (mounted) {
       Navigator.pop(context);

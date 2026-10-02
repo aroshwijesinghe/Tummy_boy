@@ -6,24 +6,34 @@ class StaminaService {
   static const String _keyLastStamina = 'user_last_stamina_val';
   static const String _keyLastCheckedDate = 'user_stamina_last_checked_date';
 
-  /// Calculates the overall daily goal completion percentage across all exercises (0.0 to 1.0).
-  static Future<double> calculateDailyGoalProgress(List<Exercise> allExercises) async {
-    if (allExercises.isEmpty) return 0.0;
+  /// Calculates the overall daily goal completion percentage across active exercises (0.0 to 1.0).
+  /// Only considers exercises where the user has assigned a goal > 0.
+  static Future<double> calculateDailyGoalProgress(List<Exercise> activeExercises) async {
+    if (activeExercises.isEmpty) return 0.0;
     final now = DateTime.now();
     double totalProgressSum = 0.0;
+    int scoredExercises = 0;
 
-    for (final ex in allExercises) {
+    for (final ex in activeExercises) {
       final current = await StorageService.getExerciseValue(ex, now);
       final goal = await StorageService.getGoal(ex);
-      final double progress = goal > 0 ? (current / goal).clamp(0.0, 1.0) : 0.0;
-      totalProgressSum += progress;
+      if (goal != null && goal > 0) {
+        final double progress = (current / goal).clamp(0.0, 1.0);
+        totalProgressSum += progress;
+        scoredExercises++;
+      } else if (current > 0) {
+        // If user logged reps without setting an explicit target, treat progress as 100% active
+        totalProgressSum += 1.0;
+        scoredExercises++;
+      }
     }
 
-    return (totalProgressSum / allExercises.length).clamp(0.0, 1.0);
+    if (scoredExercises == 0) return 0.0;
+    return (totalProgressSum / scoredExercises).clamp(0.0, 1.0);
   }
 
   /// Calculates current stamina based on exact user specification:
-  /// - If one day you do not exercise, stamina decreases by 10%.
+  /// - If one day you miss/do not exercise, stamina decreases by 20%.
   /// - When exercising, stamina increases by (100 / 7) * (overall daily progress percentage).
   /// - If all daily goals are 100% completed, full +100/7% is earned.
   static Future<double> calculateStamina(List<Exercise> allExercises) async {
@@ -35,7 +45,7 @@ class StaminaService {
     double stamina = p.getDouble(_keyLastStamina) ?? 100.0;
 
     const double maxDailyGain = 100.0 / 7.0; // 14.2857%
-    const double dailyLoss = 10.0;           // 10.0%
+    const double dailyLoss = 20.0;           // 20.0% penalty per missed day
 
     // Calculate today's overall progress (0.0 to 1.0)
     final double todayProgress = await calculateDailyGoalProgress(allExercises);

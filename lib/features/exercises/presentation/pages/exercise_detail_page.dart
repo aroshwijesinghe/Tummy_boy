@@ -31,7 +31,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     final val = await ExerciseService.getTodayValue(widget.exercise);
-    final goalVal = await StorageService.getGoal(widget.exercise);
+    final goalVal = await StorageService.getGoalOrDefault(widget.exercise, 0.0);
     final weekStart = StorageService.getWeekStart(DateTime.now());
     final weekMap = await StorageService.getWeeklyExerciseData(widget.exercise, weekStart);
     final weekList = List.generate(7, (i) {
