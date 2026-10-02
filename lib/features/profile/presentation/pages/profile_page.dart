@@ -150,11 +150,11 @@ class ProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 28),
 
-            // DEVELOPER DETAILS SECTION (Name, Email, Website)
+            // CONTACT DETAILS SECTION (Website & Email only)
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'DEVELOPER DETAILS',
+                'CONTACT',
                 style: TextStyle(
                   color: subCol,
                   fontWeight: FontWeight.w700,
@@ -168,45 +168,6 @@ class ProfilePage extends StatelessWidget {
               padding: const EdgeInsets.all(18),
               child: Column(
                 children: [
-                  // Developer Name Item
-                  Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.neonCyan.withValues(alpha: 0.15),
-                          border: Border.all(color: AppColors.neonCyan.withValues(alpha: 0.4), width: 1.2),
-                        ),
-                        child: const Icon(Icons.person_outline_rounded, color: AppColors.neonCyan, size: 22),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Developer',
-                              style: TextStyle(color: subCol, fontSize: 11, fontWeight: FontWeight.w600),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Arosh Wijesingha',
-                              style: TextStyle(
-                                color: textCol,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Divider(color: isDark ? AppColors.borderDark : AppColors.borderLight, height: 1),
-                  const SizedBox(height: 14),
                   // Website / Portfolio Item
                   GestureDetector(
                     onTap: () {
