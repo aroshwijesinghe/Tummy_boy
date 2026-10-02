@@ -38,19 +38,21 @@ class _HomePageState extends State<HomePage> {
     final customExercises = await StorageService.getCustomExercises();
     _allExercises = [...ExerciseDefaults.builtIn, ...customExercises];
 
+    final p = await StorageService.prefs;
     final now = DateTime.now();
-    for (var ex in _allExercises) {
-      final val = await StorageService.getExerciseValue(ex, now);
-      _todayValues[ex.id] = val;
+    for (final ex in _allExercises) {
+      _todayValues[ex.id] = p.getDouble(ex.dailyKey(now)) ?? 0;
     }
 
-    final stamina = await StaminaService.calculateStamina(_allExercises);
-    final streak = await StaminaService.getStreak(_allExercises);
+    final results = await Future.wait([
+      StaminaService.calculateStamina(_allExercises),
+      StaminaService.getStreak(_allExercises),
+    ]);
 
     if (mounted) {
       setState(() {
-        _staminaPercentage = stamina;
-        _streak = streak;
+        _staminaPercentage = results[0] as double;
+        _streak = results[1] as int;
         _isLoading = false;
       });
     }

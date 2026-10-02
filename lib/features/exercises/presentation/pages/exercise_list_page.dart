@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/storage_service.dart';
 import '../../../../shared/widgets/glow_icon.dart';
 import '../../../../shared/widgets/neumorphic_container.dart';
 import '../../data/models/exercise.dart';
@@ -30,13 +31,14 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     final all = await ExerciseService.getAllExercises();
+    final p = await StorageService.prefs;
+    final now = DateTime.now();
 
     _builtIn = all.where((e) => e.isBuiltIn).toList();
     _custom = all.where((e) => !e.isBuiltIn).toList();
 
-    for (var exercise in all) {
-      final value = await ExerciseService.getTodayValue(exercise);
-      _todayValues[exercise.id] = value;
+    for (final exercise in all) {
+      _todayValues[exercise.id] = p.getDouble(exercise.dailyKey(now)) ?? 0;
     }
 
     if (mounted) {

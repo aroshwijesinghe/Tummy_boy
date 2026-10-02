@@ -88,31 +88,13 @@ class _DeckTelemetryCapsuleState extends State<DeckTelemetryCapsule>
           // Animated Electric Cyan Waveform Equalizer (matching image audio lines)
           AnimatedBuilder(
             animation: _animController,
-            builder: (context, child) {
-              const barCount = 9;
-              final val = _animController.value;
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: List.generate(barCount, (i) {
-                  // Generate animated audio bar heights
-                  final wave = ((i % 3 + 1) * 0.25) + (val * 0.5);
-                  final barHeight = (8.0 + (wave * 12.0)).clamp(4.0, 18.0);
-                  return Container(
-                    width: 2.5,
-                    height: barHeight,
-                    decoration: BoxDecoration(
-                      color: AppColors.neonCyan,
-                      borderRadius: BorderRadius.circular(2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.neonCyan.withValues(alpha: 0.6),
-                          blurRadius: 4,
-                        ),
-                      ],
-                    ),
-                  );
-                }),
+            builder: (context, _) {
+              return SizedBox(
+                width: 58,
+                height: 20,
+                child: CustomPaint(
+                  painter: _EqualizerPainter(_animController.value),
+                ),
               );
             },
           ),
@@ -206,5 +188,39 @@ class DeckThemeCapsule extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _EqualizerPainter extends CustomPainter {
+  final double progress;
+  _EqualizerPainter(this.progress);
+
+  static final _paint = Paint()
+    ..color = AppColors.neonCyan
+    ..style = PaintingStyle.fill;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const barCount = 9;
+    final totalSpacing = size.width - (barCount * 2.5);
+    final spacing = totalSpacing / (barCount - 1);
+
+    for (int i = 0; i < barCount; i++) {
+      final wave = ((i % 3 + 1) * 0.25) + (progress * 0.5);
+      final barHeight = (6.0 + (wave * 12.0)).clamp(4.0, size.height);
+      final left = i * (2.5 + spacing);
+      final top = size.height - barHeight;
+
+      final rrect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(left, top, 2.5, barHeight),
+        const Radius.circular(1.5),
+      );
+      canvas.drawRRect(rrect, _paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _EqualizerPainter oldDelegate) {
+    return oldDelegate.progress != progress;
   }
 }

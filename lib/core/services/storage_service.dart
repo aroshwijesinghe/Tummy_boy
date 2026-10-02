@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/exercises/data/models/exercise.dart';
 
-/// Centralized SharedPreferences wrapper for all data storage.
+/// Centralized, high-performance SharedPreferences wrapper for all data storage.
 class StorageService {
   static SharedPreferences? _prefs;
 
@@ -11,7 +11,17 @@ class StorageService {
     return _prefs!;
   }
 
-  // ── Exercise daily logs ──
+  /// Initialize early at application startup to remove cold-start I/O delay.
+  static Future<void> init() async {
+    _prefs = await SharedPreferences.getInstance();
+  }
+
+  // ── Synchronous & Asynchronous Exercise daily logs ──
+
+  static double getExerciseValueSync(Exercise exercise, DateTime date) {
+    if (_prefs == null) return 0;
+    return _prefs!.getDouble(exercise.dailyKey(date)) ?? 0;
+  }
 
   static Future<double> getExerciseValue(Exercise exercise, DateTime date) async {
     final p = await prefs;
@@ -24,8 +34,10 @@ class StorageService {
   }
 
   static Future<void> incrementExercise(Exercise exercise, DateTime date, [double amount = 1]) async {
-    final current = await getExerciseValue(exercise, date);
-    await setExerciseValue(exercise, date, current + amount);
+    final p = await prefs;
+    final key = exercise.dailyKey(date);
+    final current = p.getDouble(key) ?? 0;
+    await p.setDouble(key, current + amount);
   }
 
   static Future<void> resetExercise(Exercise exercise, DateTime date) async {
@@ -36,30 +48,33 @@ class StorageService {
   /// Get exercise data for a 7-day span starting from [weekStart].
   static Future<Map<DateTime, double>> getWeeklyExerciseData(
       Exercise exercise, DateTime weekStart) async {
+    final p = await prefs;
     final data = <DateTime, double>{};
     for (int i = 0; i < 7; i++) {
       final date = DateTime(weekStart.year, weekStart.month, weekStart.day + i);
-      data[date] = await getExerciseValue(exercise, date);
+      data[date] = p.getDouble(exercise.dailyKey(date)) ?? 0;
     }
     return data;
   }
 
-  /// Get exercise data for a full month.
+  /// Get exercise data for a full month in a single batch read.
   static Future<Map<DateTime, double>> getMonthlyExerciseData(
       Exercise exercise, int year, int month) async {
+    final p = await prefs;
     final data = <DateTime, double>{};
     final daysInMonth = DateTime(year, month + 1, 0).day;
     for (int d = 1; d <= daysInMonth; d++) {
       final date = DateTime(year, month, d);
-      data[date] = await getExerciseValue(exercise, date);
+      data[date] = p.getDouble(exercise.dailyKey(date)) ?? 0;
     }
     return data;
   }
 
   /// Check if ANY exercise was logged on a given date.
   static Future<bool> hasAnyExerciseOnDate(DateTime date, List<Exercise> exercises) async {
+    final p = await prefs;
     for (final ex in exercises) {
-      final val = await getExerciseValue(ex, date);
+      final val = p.getDouble(ex.dailyKey(date)) ?? 0;
       if (val > 0) return true;
     }
     return false;
@@ -73,8 +88,12 @@ class StorageService {
     final p = await prefs;
     final jsonStr = p.getString(_customExercisesKey);
     if (jsonStr == null) return [];
-    final List<dynamic> list = jsonDecode(jsonStr) as List<dynamic>;
-    return list.map((e) => Exercise.fromJson(e as Map<String, dynamic>)).toList();
+    try {
+      final List<dynamic> list = jsonDecode(jsonStr) as List<dynamic>;
+      return list.map((e) => Exercise.fromJson(e as Map<String, dynamic>)).toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   static Future<void> saveCustomExercises(List<Exercise> exercises) async {

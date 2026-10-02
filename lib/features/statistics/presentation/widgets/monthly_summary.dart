@@ -17,12 +17,15 @@ class MonthlySummary extends StatelessWidget {
   });
 
   Future<Map<Exercise, double>> _getMonthlyBreakdown() async {
-    Map<Exercise, double> breakdown = {};
-    for (var ex in exercises) {
+    final breakdown = <Exercise, double>{};
+    final p = await StorageService.prefs;
+    final daysInMonth = DateTime(year, month + 1, 0).day;
+
+    for (final ex in exercises) {
       double total = 0;
-      int daysInMonth = DateTime(year, month + 1, 0).day;
       for (int i = 1; i <= daysInMonth; i++) {
-        total += await StorageService.getExerciseValue(ex, DateTime(year, month, i));
+        final date = DateTime(year, month, i);
+        total += p.getDouble(ex.dailyKey(date)) ?? 0;
       }
       if (total > 0) {
         breakdown[ex] = total;

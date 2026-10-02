@@ -47,9 +47,17 @@ class _StatisticsPageState extends State<StatisticsPage> {
 
     if (_isWeekly) {
       _weeklyData = await StatsService.getWeeklyTotal(_allExercises, _currentWeekStart);
-      _activeDaysInWeek = await StatsService.getActiveDaysInWeek(_allExercises, _currentWeekStart);
-      _bestDayInWeek = await StatsService.getBestDayInWeek(_allExercises, _currentWeekStart);
-      _totalWeekValue = _weeklyData.values.fold(0.0, (prev, curr) => prev + curr);
+      double total = 0;
+      double best = 0;
+      int active = 0;
+      for (final val in _weeklyData.values) {
+        total += val;
+        if (val > best) best = val;
+        if (val > 0) active++;
+      }
+      _totalWeekValue = total;
+      _bestDayInWeek = best;
+      _activeDaysInWeek = active;
     } else {
       _monthlyData = await StatsService.getMonthlyTotal(_allExercises, _currentMonthDate.year, _currentMonthDate.month);
     }
