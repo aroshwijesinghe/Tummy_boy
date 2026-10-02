@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/theme/theme_controller.dart';
@@ -168,16 +170,27 @@ class ProfilePage extends StatelessWidget {
               padding: const EdgeInsets.all(18),
               child: Column(
                 children: [
-                  // Website / Portfolio Item
+                  // Website / Portfolio Item (Directly opens website)
                   GestureDetector(
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Website: https://portfoilo-ruddy-two.vercel.app/'),
-                          backgroundColor: AppColors.neonCyan,
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
+                    onTap: () async {
+                      final uri = Uri.parse('https://portfoilo-ruddy-two.vercel.app/');
+                      try {
+                        final canLaunch = await canLaunchUrl(uri);
+                        if (canLaunch) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        } else {
+                          await launchUrl(uri);
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Opening https://portfoilo-ruddy-two.vercel.app/'),
+                              backgroundColor: AppColors.neonCyan,
+                            ),
+                          );
+                        }
+                      }
                     },
                     child: Row(
                       children: [
@@ -213,23 +226,38 @@ class ProfilePage extends StatelessWidget {
                             ],
                           ),
                         ),
-                        Icon(Icons.open_in_new_rounded, color: subCol, size: 18),
+                        const Icon(Icons.open_in_new_rounded, color: AppColors.neonCyan, size: 18),
                       ],
                     ),
                   ),
                   const SizedBox(height: 14),
                   Divider(color: isDark ? AppColors.borderDark : AppColors.borderLight, height: 1),
                   const SizedBox(height: 14),
-                  // Email Item
+                  // Email Item (Copies email directly to clipboard)
                   GestureDetector(
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Email: aroshwijesingha@gmail.com'),
-                          backgroundColor: AppColors.neonCyan,
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
+                    onTap: () async {
+                      const email = 'aroshwijesingha@gmail.com';
+                      await Clipboard.setData(const ClipboardData(text: email));
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Row(
+                              children: [
+                                Icon(Icons.check_circle_rounded, color: Colors.black, size: 18),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Email copied to clipboard!',
+                                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700),
+                                ),
+                              ],
+                            ),
+                            backgroundColor: AppColors.neonCyan,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
                     },
                     child: Row(
                       children: [
@@ -265,7 +293,7 @@ class ProfilePage extends StatelessWidget {
                             ],
                           ),
                         ),
-                        Icon(Icons.copy_rounded, color: subCol, size: 18),
+                        const Icon(Icons.copy_rounded, color: AppColors.neonCyan, size: 18),
                       ],
                     ),
                   ),
