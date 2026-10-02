@@ -4,7 +4,6 @@ import '../../../../core/services/storage_service.dart';
 import '../../../../shared/widgets/neumorphic_container.dart';
 import '../../../exercises/data/models/exercise.dart';
 import '../../../exercises/presentation/pages/exercise_detail_page.dart';
-import '../../../exercises/presentation/pages/add_custom_exercise_page.dart';
 import '../../../exercises/presentation/widgets/exercise_badge_icon.dart';
 import '../../../exercises/data/exercise_service.dart';
 import '../../../exercises/presentation/pages/exercise_list_page.dart';
@@ -332,41 +331,14 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 26),
 
                 // 4. EXERCISES SECTION HEADER
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'YOUR GOALS & EXERCISES',
-                      style: TextStyle(
-                        color: textCol,
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const AddCustomExercisePage()),
-                        ).then((_) => _loadData());
-                      },
-                      child: const Row(
-                        children: [
-                          Icon(Icons.add_circle_outline_rounded, size: 16, color: AppColors.neonCyan),
-                          SizedBox(width: 4),
-                          Text(
-                            'Add Custom',
-                            style: TextStyle(
-                              color: AppColors.neonCyan,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                Text(
+                  'YOUR GOALS & EXERCISES',
+                  style: TextStyle(
+                    color: textCol,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
+                  ),
                 ),
 
                 const SizedBox(height: 14),
